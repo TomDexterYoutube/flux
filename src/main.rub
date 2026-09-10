@@ -1,0 +1,62 @@
+use os
+
+os.start(1)
+
+let dep_dir: str = "~/flux/deps/"
+let pkg_dir: str = "~/flux/pkgs/"
+let flux_data_file: str = "~/flux/data.cfg"
+let flux_installed: str = "~/flux/installed.cfg"
+let flux_available: str = "~/flux/available.cfg"
+let flux_data_repo: str = "https://github.com/TomDexterYoutube/flux-data"
+let fetch_script: str = "~/flux/fetch.sh"
+
+fn command_breakdown(after: str) {
+    let mut local tmp: list = coammand.slice()
+    for y in range(0, after + 1)
+    tmp(0).drop()
+    return "<" + tmp.combine() + ">"
+}
+
+fn fetch() {
+    os.run("bash " + fetch_script, 1)
+}
+
+fn install(pkg_name) {
+    open(flux_available) as file {
+        if not (file.read()).has(pkg-name) {
+            raise "Warning Package Not Found!"
+            return 1
+        } else if (file.read()).has(pkg-name + "--installed") {
+            raise "Package Already Installed!"
+            return 2
+        }
+    }
+
+    open(pkg_dir + pkg_name + "deps.cfg") as file {
+        for line in file {
+            install(line)
+        }
+    }
+    
+    try {
+        os.run("cd " pkg_dir + pkg-name " && bash install.sh", 1)
+    } error {
+        return error
+    }
+}
+
+fn main() {
+    let command: str = args()
+    if command.has("fetch") {
+        fetch()
+    } else if command.has("update") {
+        update()
+    } else if command.has("full-update") {
+        full_update()
+    } else if command.has("purge") {
+        purge()
+    } else if command.has("install") {
+        let pkg-name: str = command_breakdown("install")
+        install(pkg-name)
+    }
+}
